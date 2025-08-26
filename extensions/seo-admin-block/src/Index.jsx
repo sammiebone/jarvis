@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Card,
   Text,
@@ -10,6 +10,7 @@ import {
   Banner,
   Layout,
   Spinner,
+  Modal,
 } from '@shopify/polaris';
 import { useApi, useData } from '@shopify/app-bridge-react';
 
@@ -45,6 +46,20 @@ export default function Index() {
   const [metaTitle, setMetaTitle] = useState('');
   const [metaDescription, setMetaDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // State for the AI Description Modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [keyFeatures, setKeyFeatures] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedDesc, setGeneratedDesc] = useState('');
+
+  const handleModalToggle = useCallback(() => {
+    setIsModalOpen((active) => !active);
+    if (isModalOpen) {
+      setKeyFeatures('');
+      setGeneratedDesc('');
+    }
+  }, [isModalOpen]);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -97,6 +112,47 @@ export default function Index() {
     }
   };
 
+  const handleCopy = async () => {
+    if (await api.navigator.clipboard.writeText(generatedDesc)) {
+      api.toast.show("Description copied to clipboard!");
+    } else {
+      api.toast.show("Failed to copy to clipboard.", { isError: true });
+    }
+  };
+
+  const handleGenerateDescription = async () => {
+    if (!keyFeatures) {
+      api.toast.show("Please enter at least one key feature.", { isError: true });
+      return;
+    }
+    setIsGenerating(true);
+    setGeneratedDesc('');
+
+    try {
+      const response = await api.fetch("/api/products/generate-description", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productTitle: product.title,
+          keyFeatures,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setGeneratedDesc(data.description);
+        api.toast.show("Description generated!");
+      } else {
+        api.toast.show("Failed to generate description.", { isError: true });
+      }
+    } catch (error) {
+      console.error("Failed to generate description:", error);
+      api.toast.show("An unexpected error occurred.", { isError: true });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <BlockStack inlineAlign="center">
@@ -134,16 +190,57 @@ export default function Index() {
 
   const seoScore = calculateSeoScore();
 
-  if (!productId) {
-    return (
-      <Banner title="Error" tone="critical">
-        <p>Could not find product ID. This extension must be used on a product page.</p>
-      </Banner>
-    );
-  }
-
   return (
     <BlockStack gap="400">
+      <Modal
+        open={isModalOpen}
+        onClose={handleModalToggle}
+        title="Generate Full Description"
+        primaryAction={{
+          content: 'Generate',
+          onAction: handleGenerateDescription,
+          loading: isGenerating,
+        }}
+        secondaryActions={[
+          {
+            content: 'Cancel',
+            onAction: handleModalToggle,
+            disabled: isGenerating,
+          },
+        ]}
+      >
+        <Modal.Section>
+          <FormLayout>
+            <TextField
+              label="Key Features or Keywords"
+              value={keyFeatures}
+              onChange={setKeyFeatures}
+              multiline={4}
+              autoComplete="off"
+              helpText="Enter key features, benefits, or keywords, one per line."
+            />
+            {isGenerating && (
+              <BlockStack inlineAlign="center" gap="200">
+                <Spinner size="small" />
+                <Text as="p">Generating...</Text>
+              </BlockStack>
+            )}
+            {generatedDesc && (
+              <BlockStack gap="200">
+                <TextField
+                  label="Generated Description"
+                  value={generatedDesc}
+                  onChange={setGeneratedDesc}
+                  multiline={10}
+                  autoComplete="off"
+                />
+                <Button onClick={handleCopy} variant="primary">Copy Description</Button>
+              </BlockStack>
+            )}
+          </FormLayout>
+        </Modal.Section>
+      </Modal>
+
       <Card>
         <BlockStack gap="200">
           <Text as="h2" variant="headingLg">
@@ -151,6 +248,14 @@ export default function Index() {
           </Text>
         </BlockStack>
       </Card>
+
+      <Card>
+        <BlockStack gap="400">
+          <Text as="h2" variant="headingMd">AI Content Tools</Text>
+          <Button onClick={handleModalToggle}>Generate Full Description</Button>
+        </BlockStack>
+      </Card>
+
       <Card>
         <BlockStack gap="400">
           <Text as="h2" variant="headingMd">
