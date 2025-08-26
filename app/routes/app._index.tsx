@@ -53,6 +53,9 @@ export default function DashboardPage() {
               <RemixLink to="/app/competitor-analysis" style={{textDecoration: 'none'}}>
                 <PolarisLink removeUnderline>Competitor Analysis Tool</PolarisLink>
               </RemixLink>
+              <RemixLink to="/app/backlink-monitoring" style={{textDecoration: 'none'}}>
+                <PolarisLink removeUnderline>Backlink Monitoring Tool</PolarisLink>
+              </RemixLink>
             </VerticalStack>
           </BlockStack>
         </Card>
