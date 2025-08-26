@@ -1,0 +1,9 @@
+name = "Content Rank Assistant"
+type = "ui_extension"
+
+[[extensions.targeting]]
+target = "admin.blog-post-details.block.render"
+module = "./src/Index.jsx"
+
+[extensions.capabilities]
+network_access = true
