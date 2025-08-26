@@ -161,6 +161,14 @@ export default function Index() {
                 </BlockStack>
                 <BlockStack gap="200">
                   <Text as="h3" variant="headingMd">
+                    Image Optimizer
+                  </Text>
+                  <Link url="/app/image-optimizer" removeUnderline>
+                    Bulk Edit Image Alt Text
+                  </Link>
+                </BlockStack>
+                <BlockStack gap="200">
+                  <Text as="h3" variant="headingMd">
                     Get started with products
                   </Text>
                   <Text as="p" variant="bodyMd">
