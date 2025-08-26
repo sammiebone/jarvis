@@ -1,4 +1,5 @@
-import { Page, Card, Text, BlockStack, Grid, List } from "@shopify/polaris";
+import { Page, Card, Text, BlockStack, Grid, VerticalStack, Link as PolarisLink } from "@shopify/polaris";
+import { Link as RemixLink } from "@remix-run/react";
 
 // Mock data that would normally come from Google Search Console / Analytics APIs
 const mockDashboardData = {
@@ -10,11 +11,6 @@ const mockDashboardData = {
     value: "8.5k",
     change: "+12%",
   },
-  topKeywords: [
-    "summer fashion trends",
-    "linen shirts for women",
-    "beach vacation outfits",
-  ],
   overallSeoScore: 88,
 };
 
@@ -46,12 +42,18 @@ export default function DashboardPage() {
         </Grid>
         <Card>
           <BlockStack gap="200">
-            <Text as="h2" variant="headingMd">Top Keywords</Text>
-            <List type="number">
-              {mockDashboardData.topKeywords.map((keyword, index) => (
-                <List.Item key={index}>{keyword}</List.Item>
-              ))}
-            </List>
+            <Text as="h2" variant="headingMd">App Tools</Text>
+            <VerticalStack gap="200">
+              <RemixLink to="/app/products" style={{textDecoration: 'none'}}>
+                <PolarisLink removeUnderline>On-Page SEO Audit Tool</PolarisLink>
+              </RemixLink>
+              <RemixLink to="/app/image-optimizer" style={{textDecoration: 'none'}}>
+                <PolarisLink removeUnderline>Bulk Image Alt Text Editor</PolarisLink>
+              </RemixLink>
+              <RemixLink to="/app/competitor-analysis" style={{textDecoration: 'none'}}>
+                <PolarisLink removeUnderline>Competitor Analysis Tool</PolarisLink>
+              </RemixLink>
+            </VerticalStack>
           </BlockStack>
         </Card>
         <Card>
